@@ -16,6 +16,7 @@ type PostListRow = {
   title: string;
   category: PostCategory;
   created_at: string;
+  author_id: string;
   author: { first_name: string | null; last_name: string | null } | null;
   post_votes: { count: number }[];
   comments: { count: number }[];
@@ -38,7 +39,7 @@ export default async function ForumPage({
   let query = supabase
     .from("posts")
     .select(
-      "id, title, category, created_at, author:profiles!author_id(first_name, last_name), post_votes(count), comments(count)",
+      "id, title, category, created_at, author_id, author:profiles!author_id(first_name, last_name), post_votes(count), comments(count)",
     )
     .order("created_at", { ascending: false })
     .limit(200);
@@ -146,7 +147,13 @@ export default async function ForumPage({
                     {CATEGORY_EMOJI[p.category]} {p.category}
                   </span>
                   <span>
-                    {displayName(p.author)} · {p.commentCount} comment
+                    <Link
+                      href={`/members/${p.author_id}`}
+                      className="hover:text-brand hover:underline"
+                    >
+                      {displayName(p.author)}
+                    </Link>{" "}
+                    · {p.commentCount} comment
                     {p.commentCount === 1 ? "" : "s"}
                   </span>
                 </p>

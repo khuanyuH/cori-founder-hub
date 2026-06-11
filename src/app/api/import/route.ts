@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { embeddingsEnabled } from "@/lib/embeddings";
+import { embedMissing } from "@/lib/embed-contacts";
 import type { CleanContact } from "@/lib/csv";
 
 // Upserts send rows in the request BODY, so a large batch is fine.
@@ -112,6 +114,18 @@ export async function POST(request: NextRequest) {
   }
 
   const alreadyKnown = uniqueContacts - newConnections;
+
+  // Best-effort: embed the new contacts from this upload so semantic search
+  // works on them right away. Capped to keep imports responsive; anything not
+  // embedded here is caught by the admin backfill route. Never fail the import.
+  if (embeddingsEnabled() && newContacts > 0) {
+    try {
+      const uploadIds = [...idByKey.values()];
+      await embedMissing(admin, { ids: uploadIds, limit: 384 });
+    } catch (e) {
+      console.error("Import embedding (non-fatal):", e);
+    }
+  }
 
   return NextResponse.json({ newContacts, newConnections, alreadyKnown });
 }

@@ -13,6 +13,7 @@ export default async function NavBar() {
 
   const links = [
     { href: "/forum", label: "Forum" },
+    { href: "/members", label: "Members" },
     { href: "/directory", label: "Directory" },
     { href: "/import", label: "Import" },
     { href: "/activity", label: "My Activity" },

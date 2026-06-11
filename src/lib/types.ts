@@ -9,10 +9,27 @@ export type Profile = {
   company: string | null;
   title: string | null;
   bio: string | null;
+  website: string | null;
+  linkedin_url: string | null;
+  location: string | null;
+  industry: string | null;
+  stage: string | null;
+  looking_for: string | null;
   status: ProfileStatus;
   is_admin: boolean;
   created_at: string;
 };
+
+// Founder stage options for the profile form / directory filter.
+export const FOUNDER_STAGES = [
+  "Idea",
+  "Pre-seed",
+  "Seed",
+  "Series A",
+  "Growth",
+  "Bootstrapped",
+  "Not raising",
+] as const;
 
 export type Contact = {
   id: string;

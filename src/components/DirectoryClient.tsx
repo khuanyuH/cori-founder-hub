@@ -66,6 +66,7 @@ export default function DirectoryClient({
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchMode, setSearchMode] = useState<"semantic" | "text" | null>(null);
   const [intro, setIntro] = useState<IntroTarget | null>(null);
 
   // Browse all contacts alphabetically, paginated. `append` loads the next page.
@@ -119,19 +120,20 @@ export default function DirectoryClient({
 
     setLoading(true);
     setActiveQuery(q);
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("contacts")
-      .select("id, first_name, last_name, company, position, linkedin_url")
-      .textSearch("search_tsv", q, { type: "websearch", config: "simple" })
-      .limit(60);
 
-    if (error) {
-      setError(error.message);
+    // Semantic search (with full-text fallback) runs server-side so the query
+    // can be embedded with the server-only Voyage key.
+    const res = await fetch(`/api/directory-search?q=${encodeURIComponent(q)}`);
+    const json = await res.json();
+    if (!res.ok) {
+      setError(json.error ?? "Search failed.");
       setLoading(false);
       return;
     }
-    const withConnectors = await attachKnownBy(supabase, data ?? []);
+    setSearchMode(json.mode === "semantic" ? "semantic" : "text");
+
+    const supabase = createClient();
+    const withConnectors = await attachKnownBy(supabase, json.contacts ?? []);
     setContacts(withConnectors);
     setLoading(false);
   }
@@ -139,6 +141,7 @@ export default function DirectoryClient({
   async function clearSearch() {
     setQuery("");
     setActiveQuery(null);
+    setSearchMode(null);
     setError(null);
     setLoading(true);
     await loadBrowse(false);
@@ -158,7 +161,7 @@ export default function DirectoryClient({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name, company, or title…"
+          placeholder="Search by name, company, or what you need (e.g. fintech investor)…"
           className="field flex-1"
         />
         <button type="submit" disabled={loading} className="btn-primary">
@@ -166,17 +169,19 @@ export default function DirectoryClient({
         </button>
       </form>
 
-      <div className="mt-3 flex items-center justify-between text-sm text-slate-500">
-        <span>
+      <div className="mt-3 flex items-center justify-between text-sm text-stone-500">
+        <span className="flex items-center gap-2">
           {activeQuery
             ? `${contacts.length} result${contacts.length === 1 ? "" : "s"} for “${activeQuery}”`
             : "Browsing the network"}
+          {activeQuery && searchMode === "semantic" && (
+            <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-dark">
+              ✨ Smart search
+            </span>
+          )}
         </span>
         {activeQuery && (
-          <button
-            onClick={clearSearch}
-            className="text-slate-500 hover:text-slate-900"
-          >
+          <button onClick={clearSearch} className="text-stone-500 hover:text-ink">
             Clear search
           </button>
         )}

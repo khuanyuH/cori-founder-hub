@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { displayName } from "@/lib/types";
 import UpvoteButton from "@/components/UpvoteButton";
 import CommentSection, { type FlatComment } from "@/components/CommentSection";
+import Markdown from "@/components/Markdown";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export default async function PostDetailPage({
   const { data: post } = await supabase
     .from("posts")
     .select(
-      "id, title, body, category, created_at, author:profiles!author_id(first_name, last_name)",
+      "id, title, body, category, created_at, author_id, author:profiles!author_id(first_name, last_name)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -59,13 +60,15 @@ export default async function PostDetailPage({
 
   const author = oneAuthor(post.author);
 
+  const isAuthor = post.author_id === userId;
+
   return (
     <div className="max-w-2xl">
-      <Link href="/forum" className="text-sm text-slate-500 hover:text-slate-900">
+      <Link href="/forum" className="text-sm text-stone-500 hover:text-ink">
         ← Back to forum
       </Link>
 
-      <article className="mt-4 rounded-lg border border-slate-200 bg-white p-6">
+      <article className="card mt-4 p-6">
         <div className="flex gap-4">
           <UpvoteButton
             postId={id}
@@ -73,25 +76,38 @@ export default async function PostDetailPage({
             initialCount={voteCount}
             initialVoted={hasVoted}
           />
-          <div className="min-w-0">
-            <h1 className="text-xl font-semibold text-slate-900">
-              {post.title}
-            </h1>
-            <p className="mt-1 text-xs text-slate-500">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="text-xl font-bold text-ink">{post.title}</h1>
+              {isAuthor && (
+                <Link
+                  href={`/forum/${id}/edit`}
+                  className="shrink-0 text-sm font-medium text-stone-500 hover:text-brand"
+                >
+                  Edit
+                </Link>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-stone-500">
               <span className="capitalize">{post.category}</span> ·{" "}
-              {displayName(author)}
+              <Link
+                href={`/members/${post.author_id}`}
+                className="hover:text-brand hover:underline"
+              >
+                {displayName(author)}
+              </Link>
             </p>
             {post.body && (
-              <p className="mt-4 whitespace-pre-wrap text-sm text-slate-700">
-                {post.body}
-              </p>
+              <div className="mt-4">
+                <Markdown>{post.body}</Markdown>
+              </div>
             )}
           </div>
         </div>
       </article>
 
       <section className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
           Comments
         </h2>
         <CommentSection postId={id} userId={userId} initial={comments} />

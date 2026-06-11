@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Markdown from "@/components/Markdown";
 
 export type FlatComment = {
   id: string;
@@ -68,14 +70,19 @@ function CommentNode({
 
   return (
     <li>
-      <div className="rounded-lg border border-slate-200 bg-white p-3">
-        <p className="text-xs font-medium text-slate-700">{node.authorName}</p>
-        <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">
-          {node.body}
-        </p>
+      <div className="card p-3">
+        <Link
+          href={`/members/${node.author_id}`}
+          className="text-xs font-semibold text-stone-700 hover:text-brand hover:underline"
+        >
+          {node.authorName}
+        </Link>
+        <div className="mt-1">
+          <Markdown>{node.body}</Markdown>
+        </div>
         <button
           onClick={() => setReplying((r) => !r)}
-          className="mt-2 text-xs text-slate-500 hover:text-slate-900"
+          className="mt-2 text-xs text-stone-500 hover:text-brand"
         >
           {replying ? "Cancel" : "Reply"}
         </button>
