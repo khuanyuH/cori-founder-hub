@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -40,9 +41,14 @@ export default function LoginPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
       <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-lg font-black text-white shadow-sm">
-          C
-        </span>
+        <Image
+          src="/cori-logo.png"
+          alt="CORI"
+          width={40}
+          height={40}
+          priority
+          className="h-10 w-10 object-contain"
+        />
         <span className="text-xl font-bold tracking-tight text-ink">
           CORI <span className="text-brand">Network</span>
         </span>

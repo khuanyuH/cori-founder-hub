@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getCurrentProfile } from "@/lib/auth";
 import { displayName } from "@/lib/types";
 import SignOutButton from "./SignOutButton";
@@ -24,9 +25,14 @@ export default async function NavBar() {
     <header className="sticky top-0 z-40 border-b border-stone-200/70 bg-white/80 backdrop-blur">
       <nav className="mx-auto flex max-w-5xl items-center gap-6 px-6 py-3">
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand text-sm font-black text-white shadow-sm">
-            C
-          </span>
+          <Image
+            src="/cori-logo.png"
+            alt="CORI"
+            width={32}
+            height={32}
+            priority
+            className="h-8 w-8 object-contain"
+          />
           <span className="text-[15px] font-bold tracking-tight text-ink">
             CORI <span className="text-brand">Network</span>
           </span>
